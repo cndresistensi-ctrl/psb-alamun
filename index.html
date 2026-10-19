@@ -127,6 +127,11 @@ footer img{background:#fff;border-radius:50%;padding:2px}
 .arsip h3{font-size:15px;margin:14px 0 4px;border-bottom:1px solid #000;color:#000}.arsip hr{border:0;border-top:2px solid #000}
 .arsip table{width:100%;border-collapse:collapse}.arsip td{padding:3px 6px;border-bottom:1px solid #ddd;font-size:12px;white-space:normal}.arsip td.k{width:38%;color:#333}
 @media print{body.pa #app>:not(.arsip){display:none!important}.arsip{margin:0;padding:0;max-width:none}.arsip table,.arsip h3{page-break-inside:avoid}}
+@page{margin:0}
+@media print{#app{padding:14mm}
+body[data-v="dashboard"] .card.w{display:none!important}
+body[data-v="dashboard"] .kartu{display:block!important;border:2px solid #000;margin:0 auto;max-width:520px}
+.kartu.kosong>*{display:none!important}.kartu.kosong::before{content:"Kartu tanda peserta tersedia setelah data pendaftaran lengkap.";font-size:14px}}
 @media print{header,footer,.np{display:none!important}.card{border:2px solid #000}body.pk .card{display:none!important}}
 </style></head><body>
 <header><div class="wrap"><a class="brand" href="#/"><img class="js-logo" alt="Logo PPM Al Azhar Muncar" width="42" height="42"><span>PPM Al Azhar Muncar</span></a><nav id="nav"></nav></div></header>
@@ -327,7 +332,7 @@ async function dash(){if(!S||S.role!=='santri')return location.hash='#/masuk';A.
  <p style="margin-bottom:6px;font-size:14px;clear:both">Kelengkapan data: ${pct}%</p><div class="bar"><i style="width:${pct}%"></i></div><br>
  <form id="f">${SEK.map(([t,fs])=>`<fieldset><legend>${t}</legend><div class="grid">${fs.map(([k,l,ty])=>fld(k,l,ty,v[k])).join('')}</div></fieldset>`).join('')}
  <button class="btn g" id="go">Simpan data</button> ${d['Status']!=='Belum selesai'?'<button type="button" class="btn s" id="kp">Cetak kartu tanda peserta</button>':'<span style="font-size:13px;color:var(--mute)">Kartu tanda peserta tersedia setelah data lengkap.</span>'}<div class="msg" id="msg" role="alert"></div></form>
- <h3 class="np" style="margin:24px 0 4px;font-size:24px">Upload berkas</h3><p class="np" style="font-size:14px;color:var(--mute);margin:0 0 8px">Format PDF, JPG, atau PNG, maksimal 2 MB per berkas (pas foto: JPG atau PNG). Bertanda * wajib.</p><div id="bk" class="np">Memuat berkas…</div><div id="du" class="np"></div></div><div class="kartu"><img src="${LOGO}" alt="" width="64" height="64" style="float:right"><div class="pf" id="kf" style="float:left;margin:0 16px 8px 0;width:84px;height:112px"><span>Foto</span></div><h2>Kartu Tanda Peserta</h2><p>PPM Al Azhar Muncar, PSB ${TA}</p><hr style="clear:both"><p>Nama: <b>${esc(d['Nama'])}</b></p><p>Nomor peserta: <b>${esc(d['No Pendaftaran'])}</b></p><p>Program: ${esc(d['Program'])}</p><p>Terdaftar pada: ${d.tglDaftar?new Date(d.tglDaftar+'T00:00:00').toLocaleDateString('id-ID',{dateStyle:'long'}):'-'}</p><p>Tes masuk: ${fmt(d['Jadwal Tes'])}</p><p>Wawancara: ${fmt(d['Jadwal Wawancara'])}</p><hr><p style="font-size:13px">Simpan kartu ini dan bawa bersama kartu identitas saat tes dan daftar ulang. Lokasi ruang diumumkan panitia. Berkas pendaftaran lengkap diarsipkan oleh panitia.</p></div></div>`;
+ <h3 class="np" style="margin:24px 0 4px;font-size:24px">Upload berkas</h3><p class="np" style="font-size:14px;color:var(--mute);margin:0 0 8px">Format PDF, JPG, atau PNG, maksimal 2 MB per berkas (pas foto: JPG atau PNG). Bertanda * wajib.</p><div id="bk" class="np">Memuat berkas…</div><div id="du" class="np"></div></div><div class="kartu${d['Status']==='Belum selesai'?' kosong':''}"><img src="${LOGO}" alt="" width="64" height="64" style="float:right"><div class="pf" id="kf" style="float:left;margin:0 16px 8px 0;width:84px;height:112px"><span>Foto</span></div><h2>Kartu Tanda Peserta</h2><p>PPM Al Azhar Muncar, PSB ${TA}</p><hr style="clear:both"><p>Nama: <b>${esc(d['Nama'])}</b></p><p>Nomor peserta: <b>${esc(d['No Pendaftaran'])}</b></p><p>Program: ${esc(d['Program'])}</p><p>Terdaftar pada: ${d.tglDaftar?new Date(d.tglDaftar+'T00:00:00').toLocaleDateString('id-ID',{dateStyle:'long'}):'-'}</p><p>Tes masuk: ${fmt(d['Jadwal Tes'])}</p><p>Wawancara: ${fmt(d['Jadwal Wawancara'])}</p><hr><p style="font-size:13px">Simpan kartu ini dan bawa bersama kartu identitas saat tes dan daftar ulang. Lokasi ruang diumumkan panitia. Berkas pendaftaran lengkap diarsipkan oleh panitia.</p></div></div>`;
  bkLoad().catch(x=>{$('#bk').textContent=x.message});
  duLoad().catch(x=>{$('#du').textContent=x.message});
  if($('#kp'))$('#kp').onclick=()=>{document.body.classList.add('pk');print();setTimeout(()=>document.body.classList.remove('pk'),800)};
@@ -360,7 +365,7 @@ function umum(){A.innerHTML=`<div class="wrap"><form class="card" id="f"><h2>Pen
  $('#f').onsubmit=async e=>{e.preventDefault();$('#go').disabled=true;say('Mencari…');$('#res').innerHTML='';
   try{const r=await run('cariPengumuman',$('#q').value);say('');$('#res').innerHTML=r?`<div style="border-left:3px solid var(--gold);padding:8px 16px;margin-top:8px"><b>${esc(r.nama)}</b><br>${esc(r.no)}<br>${esc(r.program)}<br>Status: <span class="pill">${esc(r.status)}</span></div>`:'<p>Data tidak ditemukan. Periksa kembali penulisannya.</p>'}catch(x){say(x.message,true)}$('#go').disabled=false}}
 
-function route(){navi();const h=location.hash.replace('#/','');scrollTo(0,0);
+function route(){navi();const h=location.hash.replace('#/','');document.body.dataset.v=h;scrollTo(0,0);
  ({'':home,masuk:()=>authView('masuk'),daftar:()=>authView('daftar'),dashboard:dash,panel:panel,pengumuman:umum,akun:akunView,pembayaran:bayarView,lupa:lupaView}[h]||home)()}
 addEventListener('hashchange',route);route();
 </script></body></html>
